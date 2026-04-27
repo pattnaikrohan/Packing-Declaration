@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  ACR_NAME: 'aawregistry' # Replace with your ACR name
+  ACR_NAME: 'packingdeclarationaawregistry' # Replace with your ACR name
   IMAGE_NAME: 'neural-core'
   WEBAPP_NAME: 'neural-core-app' # Replace with your Web App name
 
