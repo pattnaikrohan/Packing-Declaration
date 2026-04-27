@@ -1,0 +1,245 @@
+[
+  {
+    "text": "Document CAN0978243 - AMPLYT0002 Packing Dec - signed.pdf Vessel CMA CGM PLATON Q1 NO",
+    "declaration_type": "PKD_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "DAFF_CERTIFIED",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document FCL Packing Declaration_2025_Annual.docx Vessel None Q1 BLANK",
+    "declaration_type": "FCL_ANNUAL",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document FCL_FCX Packing Declration_2025_Single.docx Vessel None Q1 BLANK",
+    "declaration_type": "FCL_X_SINGLE",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document LCL Packing Declaration_2025_Annual.docx Vessel None Q1 BLANK",
+    "declaration_type": "LCL_ANNUAL",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document LCL Packing Declaration_2025_Single.docx Vessel None Q1 BLANK",
+    "declaration_type": "LCL_SINGLE",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document LCL Packing Declaration_2025_Single[0].pdf Vessel None Q1 BLANK",
+    "declaration_type": "LCL_SINGLE",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "YES_BAMBOO",
+    "q3_treatment": "NOT_TREATED",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document New Packing Dec(1)[0][2].docx Vessel HANSA AUSTRALIA    \u2026 Q1 BLANK",
+    "declaration_type": "PKD_SINGLE",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document PKD-ADL.pdf Vessel SINAR SUMATERA/ COSCO ADEN = Q1 NO",
+    "declaration_type": "FCL_X_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "DAFF_CERTIFIED",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document PKD-ADL.pdf Vessel SINAR SUMATERA/ COSCO ADEN = Q1 NO",
+    "declaration_type": "FCL_X_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "DAFF_CERTIFIED",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document PKD-FRE.pdf Vessel INTERASIA CATALYST Q1 YES",
+    "declaration_type": "PKD_SINGLE",
+    "q1_unacceptable_material": "YES",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document PKD-FRE.pdf Vessel INTERASIA CATALYST Q1 YES",
+    "declaration_type": "PKD_SINGLE",
+    "q1_unacceptable_material": "YES",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document PKD-MEL.pdf Vessel None Q1 YES",
+    "declaration_type": "LCL_ANNUAL",
+    "q1_unacceptable_material": "YES",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document PKD-MEL.pdf Vessel None Q1 YES",
+    "declaration_type": "LCL_ANNUAL",
+    "q1_unacceptable_material": "YES",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing Dec.pdf Vessel CNC Jawa Q1 NO",
+    "declaration_type": "FCL_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing Dec[1].pdf Vessel None Q1 YES",
+    "declaration_type": "PKD_SINGLE",
+    "q1_unacceptable_material": "YES",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "ABSENT",
+    "signed": "UNSIGNED"
+  },
+  {
+    "text": "Document Packing Declaration ROH2026.pdf Vessel None Q1 NO",
+    "declaration_type": "FCL_ANNUAL",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing Declaration-BNE.pdf Vessel NAVIOS INDIGO Q1 NO",
+    "declaration_type": "FCL_X_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing Declaration-BNE.pdf Vessel NAVIOS INDIGO Q1 NO",
+    "declaration_type": "FCL_X_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing Declaration.jpg Vessel OOCL ITALY Q1 YES",
+    "declaration_type": "LCL_SINGLE",
+    "q1_unacceptable_material": "YES",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing Declaration[2].jpg Vessel OOCL ITALY Q1 YES",
+    "declaration_type": "LCL_SINGLE",
+    "q1_unacceptable_material": "YES",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "PRESENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing declaration example - acceptable.pdf Vessel None Q1 BLANK",
+    "declaration_type": null,
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document Packing-declaration-example-unacceptable.pdf Vessel None Q1 BLANK",
+    "declaration_type": null,
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document minimum-documentary-and-import-declaration-requirements-policy-v4.2.pdf Vessel of intellectual property rights Q1 BLANK",
+    "declaration_type": "PKD_SINGLE",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "text": "Document packing-declaration-fact-sheet-english.pdf Vessel and Q1 BLANK",
+    "declaration_type": "LCL_SINGLE",
+    "q1_unacceptable_material": "BLANK",
+    "q2_timber_bamboo": "BLANK",
+    "q3_treatment": "BLANK",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED"
+  },
+  {
+    "declaration_type": "FCL_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED",
+    "text": "{'file_name': 'CAN0978243 - AMPLYT0002 Packing Dec - signed.pdf', 'declaration_type': 'PKD_SINGLE', 'issuer_company': None, 'issuer_address': '480 Wildwood Forest Dr. Suite 400, Spring, TX 77380 PACKING DECLARATION Vessel name: CMA CGM PLATON Voyage number: OYKBPS1MA Consignment identifier or numerical link:_ CANO0978243 ; SCNFES00295501', 'issuer_address_is_po_box': False, 'exporter': None, 'importer': None, 'vessel_name': 'CMA CGM PLATON', 'voyage_number': 'OYKBPS1MA', 'consignment_ref': 'CANO0978243', 'date_issued': '2026-12-02', 'date_valid': True, 'signed': True, 'signature_type': 'handwritten', 'printed_name': 'Jannite Bantheack U', 'letterhead_present': False, 'q1_unacceptable_material': 'NO', 'q2_timber_bamboo': 'YES_TIMBER', 'q3_treatment': 'DAFF_CERTIFIED', 'q4_cleanliness': 'ABSENT', 'alterations_present': False, 'alterations_endorsed': False, 'extraction_method': 'ocr', 'ocr_confidence': 0.9092}"
+  },
+  {
+    "declaration_type": "FCL_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "YES_TIMBER",
+    "q3_treatment": "ISPM15",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED",
+    "text": "{'file_name': 'CAN0978243 - AMPLYT0002 Packing Dec - signed.pdf', 'declaration_type': 'PKD_SINGLE', 'issuer_company': None, 'issuer_address': '480 Wildwood Forest Dr. Suite 400, Spring, TX 77380 PACKING DECLARATION Vessel name: CMA CGM PLATON Voyage number: OYKBPS1MA Consignment identifier or numerical link:_ CANO0978243 ; SCNFES00295501', 'issuer_address_is_po_box': False, 'exporter': None, 'importer': None, 'vessel_name': 'CMA CGM PLATON', 'voyage_number': 'OYKBPS1MA', 'consignment_ref': 'CANO0978243', 'date_issued': '2026-12-02', 'date_valid': True, 'signed': True, 'signature_type': 'handwritten', 'printed_name': 'Jannite Bantheack U', 'letterhead_present': False, 'q1_unacceptable_material': 'NO', 'q2_timber_bamboo': 'YES_TIMBER', 'q3_treatment': 'DAFF_CERTIFIED', 'q4_cleanliness': 'ABSENT', 'alterations_present': False, 'alterations_endorsed': False, 'extraction_method': 'ocr', 'ocr_confidence': 0.9092}"
+  },
+  {
+    "declaration_type": "LCL_SINGLE",
+    "q1_unacceptable_material": "NO",
+    "q2_timber_bamboo": "NO",
+    "q3_treatment": "NIL",
+    "q4_cleanliness": "ABSENT",
+    "signed": "SIGNED",
+    "text": "{'file_name': 'LCL Packing Declaration_2025_Single[0].pdf', 'declaration_type': 'LCL_SINGLE', 'issuer_company': 'Taylorleds Visual Co., Ltd', 'issuer_address': 'Unit 2408 Building 11, Cloud Park, Bantian, Longgang District, Shenzhen 518129, China', 'issuer_address_is_po_box': False, 'exporter': None, 'importer': None, 'vessel_name': None, 'voyage_number': 'HSZSE2604126', 'consignment_ref': None, 'date_issued': '2026-04-15', 'date_valid': True, 'signed': True, 'signature_type': 'typed', 'printed_name': 'Kelly Huang', 'letterhead_present': True, 'q1_unacceptable_material': 'BLANK', 'q2_timber_bamboo': 'YES_BAMBOO', 'q3_treatment': 'NOT_TREATED', 'q4_cleanliness': 'ABSENT', 'alterations_present': False, 'alterations_endorsed': False, 'extraction_method': 'pdf_text', 'ocr_confidence': 1.0}"
+  }
+]
