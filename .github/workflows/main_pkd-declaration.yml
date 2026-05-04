@@ -65,3 +65,5 @@ jobs:
           app-name: 'pkd-declaration'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_00DF7EB69B98477EB193576A9E76157C }}
+          package: backend/
+          startup-command: 'gunicorn --bind=0.0.0.0 --timeout 600 --workers 2 -k uvicorn.workers.UvicornWorker app.main:app'
