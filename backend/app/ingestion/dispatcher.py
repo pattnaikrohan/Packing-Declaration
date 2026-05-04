@@ -3,7 +3,7 @@ File dispatcher — routes uploaded files to the correct extractor.
 Also detects when a PDF has no extractable text and auto-routes to OCR.
 """
 import logging
-from app.ingestion.schema import PackingDeclaration
+from app.ingestion.schema import PackingDeclaration, TripleExtraction
 from app.ingestion import ml_engine
 
 logger = logging.getLogger(__name__)
