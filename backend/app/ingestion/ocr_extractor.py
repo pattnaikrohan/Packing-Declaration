@@ -1,8 +1,8 @@
 """
 OCR extractor for scanned PDFs and image files (JPEG, PNG).
 Pipeline: file → image(s) at 300dpi → grayscale → adaptive threshold
-         → pytesseract (word-level) → checkbox contour detection → field regex.
-Gracefully degrades if Tesseract or Poppler are unavailable.
+         → EasyOCR (word-level) → checkbox contour detection → field regex.
+Pure Python — no system binaries (Tesseract/Poppler) required.
 """
 import io
 import logging
@@ -18,18 +18,34 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Lazy-loaded EasyOCR reader (singleton — model loads once)
+_easyocr_reader = None
+
+def _get_ocr_reader():
+    global _easyocr_reader
+    if _easyocr_reader is None:
+        import easyocr
+        _easyocr_reader = easyocr.Reader(['en'], gpu=False)
+        logger.info("EasyOCR reader initialized (CPU mode)")
+    return _easyocr_reader
+
 
 def _load_images_from_pdf(file_bytes: bytes) -> list:
+    """Convert PDF pages to PIL Images using PyMuPDF (pure Python, no Poppler needed)."""
     try:
-        import pdfplumber
-        import io
+        import fitz  # PyMuPDF
         images = []
-        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-            for page in pdf.pages:
-                images.append(page.to_image(resolution=300).original)
+        doc = fitz.open(stream=file_bytes, filetype="pdf")
+        for page in doc:
+            # Render at 300 DPI (default is 72, so matrix = 300/72 ≈ 4.17)
+            mat = fitz.Matrix(300 / 72, 300 / 72)
+            pix = page.get_pixmap(matrix=mat)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            images.append(img)
+        doc.close()
         return images
     except Exception as e:
-        logger.warning(f"pdfplumber image generation failed: {e}")
+        logger.warning(f"PyMuPDF image generation failed: {e}")
         return []
 
 
@@ -74,38 +90,71 @@ def _preprocess_image(pil_img) -> "tuple[np.ndarray | None, np.ndarray | None]":
 
 
 def _ocr_image(cv_img) -> tuple[str, float, dict]:
+    """Run EasyOCR on an image array. Returns (text, confidence, tesseract-compatible data dict)."""
     try:
-        import pytesseract
-        from pytesseract import Output
-        pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
-        pil_img = Image.fromarray(cv_img)
-        # Deep Neural Net OCR (OEM_LSTM) with uniform text block mapping (PSM 6) for stable regex layouts
-        data = pytesseract.image_to_data(pil_img, lang="eng", config="--oem 3 --psm 6", output_type=Output.DICT)
-        confs = [int(c) for c in data["conf"] if str(c).lstrip("-").isdigit() and int(c) > 0]
-        mean_conf = (sum(confs) / len(confs) / 100.0) if confs else 0.0
+        reader = _get_ocr_reader()
+        # EasyOCR expects numpy array (grayscale or BGR)
+        results = reader.readtext(cv_img, detail=1, paragraph=False)
+
+        # Build a pytesseract-compatible data dict so checkbox detection still works
+        data = {
+            "text": [],
+            "conf": [],
+            "left": [],
+            "top": [],
+            "width": [],
+            "height": [],
+            "line_num": [],
+        }
+
+        if not results:
+            return "", 0.0, data
+
+        # Group words into lines by Y-proximity
+        # Sort by top-left Y then X
+        sorted_results = sorted(results, key=lambda r: (r[0][0][1], r[0][0][0]))
+
+        line_num = 1
+        prev_y = sorted_results[0][0][0][1] if sorted_results else 0
+        line_height_threshold = 15  # pixels — words within this Y-range are on the same line
+
         lines = []
-        current_line = []
-        prev_line_num = -1
-        for j in range(len(data["text"])):
-            w_text = data["text"][j].strip()
-            if not w_text:
-                continue
-            
-            line_num = data["line_num"][j]
-            if prev_line_num != -1 and line_num != prev_line_num:
-                lines.append(" ".join(current_line))
-                current_line = []
-            
-            current_line.append(w_text)
-            prev_line_num = line_num
-        
-        if current_line:
-            lines.append(" ".join(current_line))
-            
-        text = "\n".join(lines)
-        return text, mean_conf, data
+        current_line_words = []
+
+        for bbox, text, conf in sorted_results:
+            # bbox is [[x1,y1],[x2,y1],[x2,y2],[x1,y2]]
+            x1, y1 = int(bbox[0][0]), int(bbox[0][1])
+            x2, y2 = int(bbox[2][0]), int(bbox[2][1])
+            w = x2 - x1
+            h = y2 - y1
+
+            # Check if this word is on a new line
+            if abs(y1 - prev_y) > line_height_threshold and current_line_words:
+                lines.append(" ".join(current_line_words))
+                current_line_words = []
+                line_num += 1
+
+            current_line_words.append(text)
+            prev_y = y1
+
+            data["text"].append(text)
+            data["conf"].append(int(conf * 100))
+            data["left"].append(x1)
+            data["top"].append(y1)
+            data["width"].append(w)
+            data["height"].append(h)
+            data["line_num"].append(line_num)
+
+        if current_line_words:
+            lines.append(" ".join(current_line_words))
+
+        full_text = "\n".join(lines)
+        confs = [c for c in data["conf"] if c > 0]
+        mean_conf = (sum(confs) / len(confs) / 100.0) if confs else 0.0
+
+        return full_text, mean_conf, data
     except Exception as e:
-        logger.warning(f"Tesseract OCR failed: {e}")
+        logger.warning(f"EasyOCR failed: {e}")
         return "", 0.0, {}
 
 
@@ -663,11 +712,11 @@ def extract_roi(file_bytes: bytes, x1: float, y1: float, x2: float, y2: float, i
         
     roi = img.crop((left, top, right, bottom))
     
-    # OCR the ROI
-    import pytesseract
-    pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
-    # Higher PSM (7 or 8) is often better for single-line snippets
-    text = pytesseract.image_to_string(roi, lang="eng", config="--psm 7").strip()
+    # OCR the ROI using EasyOCR
+    reader = _get_ocr_reader()
+    roi_array = np.array(roi)
+    results = reader.readtext(roi_array, detail=0, paragraph=True)
+    text = " ".join(results).strip()
     
     logger.info(f"[roi] Extracted text from box ({x1:.2f},{y1:.2f} to {x2:.2f},{y2:.2f}): '{text}'")
     return text

@@ -5,8 +5,6 @@ from typing import List
 class Settings(BaseSettings):
     POWER_AUTOMATE_URL: str = ""
 
-    TESSERACT_CMD: str = "tesseract"
-
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
     AZURE_STORAGE_CONNECTION_STRING: str = ""
