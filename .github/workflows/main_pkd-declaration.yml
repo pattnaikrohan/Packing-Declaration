@@ -54,7 +54,7 @@ jobs:
           name: python-app
 
       - name: List downloaded files
-        run: ls -la && ls -la backend/ || echo "no backend dir"
+        run: ls -la
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -63,4 +63,3 @@ jobs:
           app-name: 'pkd-declaration'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_00DF7EB69B98477EB193576A9E76157C }}
-          package: 'backend'
