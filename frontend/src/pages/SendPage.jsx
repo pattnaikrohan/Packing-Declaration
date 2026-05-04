@@ -78,18 +78,18 @@ function validateDaff(extraction) {
 
   // 3. Unacceptable Packaging (Q1)
   const q1 = best('q1_unacceptable_material');
-  if (!q1 || q1 === 'BLANK') {
+  if (!q1 || q1 === 'BLANK' || q1 === 'DECLARED_BLANK') {
     errors.push("Missing declaration for unacceptable packaging materials");
   }
 
   // 4. Timber / Bamboo Logic (Q2 / Q3)
   const q2 = best('q2_timber_bamboo');
   const q3 = best('q3_treatment');
-  if (q2 === 'NO' && (q3 && q3 !== 'BLANK')) {
+  if (q2 === 'NO' && (q3 && q3 !== 'BLANK' && q3 !== 'DECLARED_BLANK')) {
     errors.push("Q2 is NO but Q3 is completed (conflict)");
   }
   if (q2 === 'YES_TIMBER' || q2 === 'YES_BAMBOO' || q2 === 'YES_BOTH') {
-    if (!q3 || q3 === 'BLANK') {
+    if (!q3 || q3 === 'BLANK' || q3 === 'DECLARED_BLANK') {
       errors.push("Q2 is YES but Q3 is missing");
     }
   }
@@ -134,285 +134,189 @@ function validateDaff(extraction) {
 }
 
 // ─── Tactical Audit HUD (Cinematic Compliance) ──────────────────────────────
-function ComplianceOverlay({ currentDocName, docIndex, totalDocs, activeRuleIndex }) {
+function ComplianceOverlay({ currentDocName, docIndex, totalDocs, activeRuleIndex, currentDocErrors }) {
   const rules = [
-    "ISSUER IDENTITY & PHYSICAL ADDRESS",
-    "CONSIGNMENT LINKAGE (BOL/CTR/INV)",
-    "UNACCEPTABLE PACKAGING (Q1)",
-    "TIMBER & BAMBOO CONFLICT (Q2/Q3)",
-    "CLEANLINESS STATEMENT (LCL/FCL)",
-    "ENDORSEMENT & PRINTED NAME",
-    "DATE OF ISSUE VALIDITY",
-    "ALTERATION ENDORSEMENT AUDIT"
+    { label: "Issuer Identity & Address", keys: ["issuer", "address", "po box"] },
+    { label: "Consignment Linkage", keys: ["consignment"] },
+    { label: "Unacceptable Packaging (Q1)", keys: ["packaging"] },
+    { label: "Timber & Bamboo Logic (Q2/Q3)", keys: ["q2", "q3", "conflict"] },
+    { label: "Cleanliness Statement", keys: ["cleanliness"] },
+    { label: "Endorsement & Signatory", keys: ["signature", "printed name"] },
+    { label: "Date of Issue Validity", keys: ["date"] },
+    { label: "Alteration Endorsement", keys: ["alteration"] }
   ];
 
+  const hasFailure = (keys) => {
+     if (!currentDocErrors) return false;
+     return currentDocErrors.some(err => keys.some(k => err.toLowerCase().includes(k.toLowerCase())));
+  };
+
+  const progressPct = Math.round(((docIndex * 8 + activeRuleIndex) / (totalDocs * 8)) * 100) || 0;
+
   return (
-    <div className="tactical-hud-overlay">
-      <div className="neural-grid-bg" />
-      <div className="hud-scanline" />
-      
-      <div className="hud-container">
-        {/* Header Section */}
-        <div className="hud-header">
-          <div className="hud-label-group">
-            <div className="hud-label">NEURAL AUDIT CORE v5.0</div>
-            <div className="hud-status-blink">SYSTEM ACTIVE</div>
-          </div>
-          <div className="hud-batch-status">AUDITING DOCUMENT {docIndex + 1} <span className="total-count">/ {totalDocs}</span></div>
-          <div className="hud-doc-name-wrap">
-             <div className="hud-doc-name">{currentDocName}</div>
-          </div>
+    <div className="co-minimal-overlay">
+      <div className="co-minimal-panel">
+        
+        {/* Header */}
+        <div className="co-min-header">
+           <div className="co-min-badge">Compliance Verification</div>
+           <h2 className="co-min-title">{currentDocName}</h2>
+           <div className="co-min-subtitle">Document {docIndex + 1} of {totalDocs}</div>
         </div>
 
-        <div className="hud-main-content">
-          {/* Central Auditing Ring */}
-          <div className="hud-visual-core">
-            <div className="hud-central-audit">
-              <div className="audit-ring-outer" />
-              <div className="audit-ring-middle" />
-              <div className="audit-ring-inner" />
-              <div className="audit-scanner-beam" />
-              <div className="audit-icon-wrap">⚖️</div>
-            </div>
-            <div className="core-telemetry">
-               <div className="tel-item">SENSITIVITY: MAX</div>
-               <div className="tel-item">VECTORS: ALIGNED</div>
-            </div>
-          </div>
+        {/* Main Body */}
+        <div className="co-min-body">
+           <div className="co-min-rules">
+             {rules.map((rule, idx) => {
+               const isScanning = idx === activeRuleIndex;
+               const isEvaluated = idx < activeRuleIndex;
+               const failed = isEvaluated && hasFailure(rule.keys);
+               
+               let stateClass = "pending";
+               if (isScanning) stateClass = "scanning";
+               if (isEvaluated) stateClass = failed ? "failed" : "passed";
 
-          {/* Rules Checklist */}
-          <div className="hud-rules-list">
-            {rules.map((rule, idx) => {
-              const isScanning = idx === activeRuleIndex;
-              const isPassed = idx < activeRuleIndex;
-              return (
-                <div key={idx} className={`hud-rule-item ${isScanning ? 'scanning' : ''} ${isPassed ? 'passed' : ''}`}>
-                  <div className="rule-status-box">
-                    {isPassed ? "✓" : isScanning ? "..." : "○"}
-                  </div>
-                  <div className="rule-info">
-                    <div className="rule-text">{rule}</div>
-                    <div className="rule-subtext">{isPassed ? "VALIDATION SECURE" : isScanning ? "EXECUTING HEURISTICS..." : "AWAITING VECTOR"}</div>
-                  </div>
-                  {isScanning && <div className="scanning-bar" />}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Sync Status */}
-        <div className="hud-footer-sync">
-          <div className="sync-info">
-             <span>POWER AUTOMATE EXTERNAL SYNC</span>
-             <span className="sync-percentage">{Math.round((activeRuleIndex / 8) * 100)}%</span>
-          </div>
-          <div className="sync-track">
-            <div className="sync-fill" style={{ width: `${(activeRuleIndex / 8) * 100}%` }} />
-          </div>
-        </div>
-      </div>
-
-      <div className="tactical-hud-overlay">
-        <div className="neural-grid-bg" />
-        <div className="scanning-ray" />
-        <div className="hud-container">
-          <div className="hud-header">
-             <div className="hud-label-group">
-                <div className="hud-label">NEURAL AUDIT CORE v9.0</div>
-                <div className="hud-status-blink">SYSTEM ACTIVE</div>
-             </div>
-             <div className="hud-batch-status">
-                AUDITING DOCUMENT {docIndex + 1} <span className="total-count">/ {totalDocs}</span>
-             </div>
-             <div className="hud-doc-name">{currentDocName}</div>
-          </div>
-
-          <div className="hud-main-content">
-            <div className="hud-visual-core">
-               <div className="hud-central-audit">
-                  <div className="audit-ring-outer" />
-                  <div className="audit-ring-middle" />
-                  <div className="audit-ring-inner" />
-                  <div className="audit-scanner-beam" />
-                  <div className="audit-icon-wrap">⚖</div>
-               </div>
-               <div className="core-telemetry">
-                  <div className="tel-item">SENSITIVITY: MAX</div>
-                  <div className="tel-item">VECTORS: ALIGNED</div>
-                  <div className="tel-item">SYNAPSE LOAD: 94%</div>
-               </div>
-            </div>
-
-            <div className="hud-rules-list">
-              {rules.map((rule, idx) => {
-                const isScanning = idx === activeRuleIndex;
-                const isPassed = idx < activeRuleIndex;
-                return (
-                  <div key={idx} className={`hud-rule-item ${isScanning ? 'scanning' : ''} ${isPassed ? 'passed' : ''}`}>
-                    <div className="rule-status-box">
-                      {isPassed ? "✓" : isScanning ? <div className="pulse-dot" /> : <div className="wait-dot" />}
+               return (
+                 <div key={idx} className={`co-min-rule-item ${stateClass}`}>
+                    <div className="co-min-icon">
+                       {isEvaluated ? (failed ? (
+                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                       ) : (
+                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                       )) : isScanning ? (
+                         <div className="co-min-spinner"></div>
+                       ) : (
+                         <div className="co-min-dot"></div>
+                       )}
                     </div>
-                    <div className="rule-info">
-                      <div className="rule-text">{rule}</div>
-                      <div className="rule-subtext">{isPassed ? "VALIDATION SECURE" : isScanning ? "EXECUTING HEURISTICS..." : "AWAITING VECTOR"}</div>
+                    <div className="co-min-rule-name">{rule.label}</div>
+                    <div className="co-min-rule-status">
+                       {isEvaluated ? (failed ? "Violation" : "Verified") : isScanning ? "Analyzing" : "Waiting"}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="hud-footer-sync">
-            <div className="sync-info">
-               <span>POWER AUTOMATE EXTERNAL SYNC</span>
-               <span className="sync-percentage">{Math.round(((docIndex * 8 + activeRuleIndex) / (totalDocs * 8)) * 100)}%</span>
-            </div>
-            <div className="sync-track">
-              <div className="sync-fill" style={{ width: `${Math.round(((docIndex * 8 + activeRuleIndex) / (totalDocs * 8)) * 100)}%` }} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="tactical-hud-overlay">
-        <div className="neural-pulse-bg" />
-        <div className="hud-safe-zone">
-          <div className="hud-container-3d">
-            <div className="hud-header">
-               <div className="hud-label-group">
-                  <div className="hud-label">NEURAL AUDIT CORE v11.0</div>
-                  <div className="hud-status-blink">SYSTEM ACTIVE</div>
-               </div>
-               <div className="hud-batch-status">
-                  AUDITING DOCUMENT {docIndex + 1} <span className="total-count">/ {totalDocs}</span>
-               </div>
-               <div className="hud-doc-name">{currentDocName}</div>
-            </div>
-
-            <div className="hud-main-content">
-              <div className="hud-visual-core">
-                 <div className="hud-central-audit">
-                    <div className="audit-ring-outer" />
-                    <div className="audit-ring-middle" />
-                    <div className="audit-ring-inner" />
-                    <div className="audit-scanner-beam" />
-                    <div className="audit-icon-wrap">⚖</div>
                  </div>
-                 <div className="core-telemetry">
-                    <div className="tel-item">SENSITIVITY: MAX</div>
-                    <div className="tel-item">VECTORS: ALIGNED</div>
-                    <div className="tel-item">SYNAPSE LOAD: 98%</div>
-                 </div>
-              </div>
+               )
+             })}
+           </div>
+        </div>
 
-              <div className="hud-rules-list">
-                {rules.map((rule, idx) => {
-                  const isScanning = idx === activeRuleIndex;
-                  const isPassed = idx < activeRuleIndex;
-                  return (
-                    <div key={idx} className={`hud-rule-item ${isScanning ? 'scanning' : ''} ${isPassed ? 'passed' : ''}`}>
-                      <div className="rule-status-box">
-                        {isPassed ? "✓" : isScanning ? <div className="pulse-dot" /> : <div className="wait-dot" />}
-                      </div>
-                      <div className="rule-info">
-                        <div className="rule-text">{rule}</div>
-                        <div className="rule-subtext">{isPassed ? "VALIDATION SECURE" : isScanning ? "EXECUTING HEURISTICS..." : "AWAITING VECTOR"}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="hud-footer-sync">
-              <div className="sync-info">
-                 <span>POWER AUTOMATE EXTERNAL SYNC</span>
-                 <span className="sync-percentage">{Math.round(((docIndex * 8 + activeRuleIndex) / (totalDocs * 8)) * 100)}%</span>
-              </div>
-              <div className="sync-track">
-                <div className="sync-fill" style={{ width: `${Math.round(((docIndex * 8 + activeRuleIndex) / (totalDocs * 8)) * 100)}%` }} />
-              </div>
-            </div>
-          </div>
+        {/* Footer Progress */}
+        <div className="co-min-footer">
+           <div className="co-min-progress-text">{progressPct}% Complete</div>
+           <div className="co-min-progress-bar">
+              <div className="co-min-progress-fill" style={{ width: `${progressPct}%` }}></div>
+           </div>
         </div>
       </div>
 
       <style>{`
-        .tactical-hud-overlay {
+        /* Clean, Vercel-like Dark Mode */
+        .co-minimal-overlay {
           position: fixed; inset: 0; z-index: 5000;
-          background: #010103; display: flex; align-items: center; justify-content: center;
-          color: #fff; font-family: 'Outfit', sans-serif; overflow: hidden;
-        }
-        .neural-pulse-bg {
-          position: absolute; inset: 0;
-          background-image: 
-            radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.08) 0%, transparent 70%),
-            linear-gradient(rgba(34, 211, 238, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(34, 211, 238, 0.02) 1px, transparent 1px);
-          background-size: 100% 100%, 80px 80px, 80px 80px;
-          animation: bg-pulse 8s infinite alternate;
-        }
-        @keyframes bg-pulse {
-          from { opacity: 0.5; transform: scale(1); }
-          to { opacity: 1; transform: scale(1.05); }
-        }
-        
-        .hud-safe-zone {
-          width: 100%; height: 100%; max-width: 1200px; max-height: 850px;
           display: flex; align-items: center; justify-content: center;
-          padding: 40px; box-sizing: border-box;
-          perspective: 1200px;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(8px);
+          font-family: 'Inter', -apple-system, sans-serif;
+          color: #ededed;
+        }
+
+        .co-minimal-panel {
+          width: 100%; max-width: 550px;
+          background: #0a0a0a;
+          border: 1px solid #222;
+          border-radius: 12px;
+          padding: 48px;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+          display: flex; flex-direction: column; gap: 40px;
+          animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .co-min-header {
+          text-align: center;
+          display: flex; flex-direction: column; align-items: center; gap: 12px;
+        }
+
+        .co-min-badge {
+          font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+          color: #888; background: #111; padding: 4px 12px; border-radius: 6px; border: 1px solid #222;
+        }
+
+        .co-min-title {
+          font-size: 1.4rem; font-weight: 500; color: #fff; margin: 0;
+          letter-spacing: -0.01em;
+        }
+
+        .co-min-subtitle {
+          font-size: 0.85rem; color: #666;
+        }
+
+        .co-min-rules {
+          display: flex; flex-direction: column; gap: 1px;
+          background: #222; border: 1px solid #222; border-radius: 8px; overflow: hidden;
+        }
+
+        .co-min-rule-item {
+          display: flex; align-items: center; padding: 14px 20px;
+          background: #0a0a0a;
+          transition: background 0.2s;
+        }
+
+        .co-min-rule-item.scanning {
+          background: #111;
+        }
+
+        .co-min-icon {
+          width: 24px; display: flex; align-items: center; justify-content: center;
+          margin-right: 16px; color: #444;
+        }
+
+        .co-min-dot {
+          width: 5px; height: 5px; border-radius: 50%; background: #444;
+        }
+
+        .co-min-spinner {
+          width: 14px; height: 14px; border: 2px solid #444;
+          border-top-color: #ededed; border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+
+        .passed .co-min-icon { color: #10b981; }
+        .failed .co-min-icon { color: #ef4444; }
+        .scanning .co-min-icon { color: #ededed; }
+
+        .co-min-rule-name {
+          flex: 1; font-size: 0.9rem; font-weight: 400; color: #666;
         }
         
-        .hud-container-3d {
-          width: 100%; display: flex; flex-direction: column;
-          transform: rotateX(5deg);
-          animation: hud-float 6s ease-in-out infinite;
-        }
-        @keyframes hud-float {
-          0%, 100% { transform: rotateX(5deg) translateY(0); }
-          50% { transform: rotateX(4deg) translateY(-10px); }
+        .passed .co-min-rule-name, .failed .co-min-rule-name { color: #ccc; }
+        .scanning .co-min-rule-name { color: #fff; font-weight: 500; }
+
+        .co-min-rule-status {
+          font-size: 0.75rem; font-weight: 500; color: #444; text-transform: uppercase; letter-spacing: 0.05em;
         }
 
-        .hud-header { margin-bottom: 40px; border-left: 5px solid var(--accent-cyan); padding-left: 30px; }
-        .hud-label-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .hud-label { color: var(--accent-cyan); font-size: 0.8rem; letter-spacing: 0.5em; font-weight: 800; text-shadow: 0 0 10px var(--accent-cyan-glow); }
-        .hud-status-blink { color: #4ade80; font-size: 0.7rem; font-weight: 900; animation: blink 1s infinite alternate; }
-        .hud-batch-status { font-size: 3rem; font-weight: 900; letter-spacing: -2px; }
-        .total-count { opacity: 0.2; }
-        .hud-doc-name { color: var(--accent-cyan); font-size: 1.1rem; font-weight: 700; margin-top: 10px; opacity: 0.8; }
+        .passed .co-min-rule-status { color: #10b981; }
+        .failed .co-min-rule-status { color: #ef4444; }
+        .scanning .co-min-rule-status { color: #ededed; }
 
-        .hud-main-content { display: grid; grid-template-columns: 320px 1fr; gap: 60px; align-items: center; }
-        .hud-visual-core { display: flex; flex-direction: column; align-items: center; gap: 30px; }
-        .hud-central-audit { position: relative; width: 240px; height: 240px; display: flex; align-items: center; justify-content: center; }
-        .audit-ring-outer { position: absolute; inset: 0; border: 1px solid var(--accent-cyan); border-radius: 50%; opacity: 0.2; animation: spin 20s linear infinite; }
-        .audit-ring-middle { position: absolute; inset: 15px; border: 2px dashed var(--accent); border-radius: 50%; opacity: 0.4; animation: spin 10s linear infinite reverse; }
-        .audit-ring-inner { position: absolute; inset: 40px; border: 4px solid var(--accent-cyan); border-radius: 50%; border-top-color: transparent; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-        .audit-scanner-beam { position: absolute; width: 100%; height: 2px; background: var(--accent-cyan); top: 50%; left: 0; box-shadow: 0 0 25px var(--accent-cyan); animation: orb-scan 3s infinite ease-in-out; }
-        @keyframes orb-scan { 0%, 100% { top: 10%; opacity: 0; } 50% { top: 90%; opacity: 1; } }
-        .audit-icon-wrap { font-size: 4rem; filter: drop-shadow(0 0 40px var(--accent-cyan-glow)); animation: orb-pulse 2s infinite; }
-        @keyframes orb-pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 1; } }
-        .core-telemetry { display: flex; flex-direction: column; gap: 8px; align-items: center; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); }
+        .co-min-footer {
+          display: flex; flex-direction: column; gap: 12px;
+        }
 
-        .hud-rules-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .hud-rule-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; gap: 20px; align-items: center; transition: all 0.4s; position: relative; overflow: hidden; }
-        .hud-rule-item.scanning { border-color: var(--accent-cyan); background: rgba(34,211,238,0.1); transform: scale(1.02) translateX(10px); z-index: 10; box-shadow: 0 0 40px rgba(34,211,238,0.2); }
-        .hud-rule-item.passed { border-color: #4ade80; background: rgba(74,222,128,0.05); }
-        .rule-status-box { width: 40px; height: 40px; border-radius: 10px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; color: rgba(255,255,255,0.1); }
-        .passed .rule-status-box { color: #4ade80; text-shadow: 0 0 15px rgba(74,222,128,0.5); }
-        .scanning .rule-status-box { color: var(--accent-cyan); }
-        .pulse-dot { width: 10px; height: 10px; background: var(--accent-cyan); border-radius: 50%; animation: pulse 1s infinite; }
-        .wait-dot { width: 6px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 50%; }
-        .rule-info { flex: 1; }
-        .rule-text { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 4px; color: rgba(255,255,255,0.6); }
-        .scanning .rule-text { color: #fff; }
-        .rule-subtext { font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; }
-        .scanning .rule-subtext { color: var(--accent-cyan); }
-        .hud-footer-sync { margin-top: 40px; }
-        .sync-info { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.2em; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
-        .sync-track { height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
-        .sync-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-cyan)); transition: width 0.4s ease; box-shadow: 0 0 25px var(--accent-glow); }
+        .co-min-progress-text {
+          font-size: 0.8rem; color: #888; text-align: right; font-weight: 500;
+        }
+
+        .co-min-progress-bar {
+          height: 3px; background: #222; border-radius: 2px; overflow: hidden;
+        }
+
+        .co-min-progress-fill {
+          height: 100%; background: #ededed; transition: width 0.3s ease;
+        }
       `}</style>
     </div>
   );
@@ -463,7 +367,10 @@ function AuditReportModal({ file, report, onClose, onOverride }) {
         <div className="audit-checklist">
           {allRules.map((rule, idx) => {
             const keys = Array.isArray(rule.key) ? rule.key : [rule.key];
-            const errors = internal.errors || [];
+            const combinedErrors = [
+              ...(internal.errors || []).map(e => `[INTERNAL] ${e}`),
+              ...(external.errors || []).map(e => `[EXTERNAL] ${e}`)
+            ];
             
             // For the catch-all "Neural Diagnostics"
             let ruleErrors = [];
@@ -472,19 +379,19 @@ function AuditReportModal({ file, report, onClose, onOverride }) {
               const caughtErrors = new Set();
               allRules.slice(0, -1).forEach(r => {
                 const rKeys = Array.isArray(r.key) ? r.key : [r.key];
-                errors.forEach(err => {
+                combinedErrors.forEach(err => {
                   if (rKeys.some(k => err.toLowerCase().includes(k.toLowerCase()))) {
                     caughtErrors.add(err);
                   }
                 });
               });
-              ruleErrors = errors.filter(err => !caughtErrors.has(err));
-              if (ruleErrors.length === 0 && internal.status === "Valid") return null;
-              if (ruleErrors.length === 0 && internal.status === "Invalid" && errors.length === 0) {
+              ruleErrors = combinedErrors.filter(err => !caughtErrors.has(err));
+              if (ruleErrors.length === 0 && internal.status === "Valid" && external.status === "Valid") return null;
+              if (ruleErrors.length === 0 && (internal.status === "Invalid" || external.status === "Invalid") && combinedErrors.length === 0) {
                  ruleErrors = ["Unspecified extraction anomaly detected"];
               }
             } else {
-              ruleErrors = errors.filter(err => 
+              ruleErrors = combinedErrors.filter(err => 
                 keys.some(k => err.toLowerCase().includes(k.toLowerCase()))
               );
             }
@@ -1294,6 +1201,7 @@ export default function SendPage() {
   const [complianceResults, setComplianceResults] = useState(null)
   const [auditDocIndex, setAuditDocIndex] = useState(0)
   const [auditRuleIndex, setAuditRuleIndex] = useState(-1)
+  const [currentDocErrors, setCurrentDocErrors] = useState([])
   const [activeAuditReport, setActiveAuditReport] = useState(null)
 
   const handleAuditReview = (e, res) => {
@@ -1375,12 +1283,8 @@ export default function SendPage() {
     for (let i = 0; i < allResults.length; i++) {
       const res = allResults[i];
       setAuditDocIndex(i);
-      for (let r = 0; r < 8; r++) {
-        setAuditRuleIndex(r);
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
-      setAuditRuleIndex(8);
 
+      // Evaluate compliance immediately before animating
       const internalReport = validateDaff(res.extraction)
       const consensusData = {}
       const fieldsToMap = [
@@ -1399,12 +1303,21 @@ export default function SendPage() {
         externalReport = paResponse
       } catch (e) { }
 
+      setCurrentDocErrors([...(internalReport.errors || []), ...(externalReport.errors || [])]);
+
+      for (let r = 0; r < 8; r++) {
+        setAuditRuleIndex(r);
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      setAuditRuleIndex(8);
+
       const isOverallValid = internalReport.status === "Valid" && externalReport.status === "Valid"
       results.push({ ...res, compliancePassed: isOverallValid, complianceDetails: { internal: internalReport, external: externalReport } })
     }
 
     setComplianceResults(results)
     setComplianceRunning(false)
+    setCurrentDocErrors([])
     toast.success(`Compliance check accomplished`, { duration: 5000 })
   }
 
@@ -1493,6 +1406,7 @@ export default function SendPage() {
         totalDocs={allResults.length}
         currentDocName={allResults[auditDocIndex]?.file?.name}
         activeRuleIndex={auditRuleIndex}
+        currentDocErrors={currentDocErrors}
       />
     )}
     {activeAuditReport && (

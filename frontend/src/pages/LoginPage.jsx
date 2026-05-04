@@ -26,7 +26,7 @@ const LoginPage = () => {
             <img src="/aaw.png" alt="AAW Logo" className="login-logo-img" />
           </div>
           <h1>Packing Declaration Validator</h1>
-          <p classDashboardName="login-subtitle">DAFF COMPLIANCE · AUDIT INTERFACE</p>
+          <p className="login-subtitle">DAFF COMPLIANCE · AUDIT INTERFACE</p>
         </div>
 
         <div className="login-body">

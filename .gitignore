@@ -1,11 +1,11 @@
-# Secrets (Aggressive)
+# ── Secrets ──
 .env
 **/.env
 *.key
 *.pem
 credentials.json
 
-# Python (Aggressive)
+# ── Python ──
 __pycache__/
 **/__pycache__/
 *.py[cod]
@@ -14,16 +14,28 @@ __pycache__/
 venv/
 .pytest_cache/
 
-# IDEs
+# ── IDEs ──
 .vscode/
 .idea/
 
-# Frontend
+# ── Frontend ──
 node_modules/
 dist/
 dist-ssr/
 *.local
 
-# OS
+# ── OS ──
 .DS_Store
 Thumbs.db
+
+# ── Large files / archives (never commit) ──
+*.zip
+*.db
+*.sqlite3
+
+# ── Scratch / debug (repo root) ──
+scratch*.txt
+diff*.txt
+debug_output.txt
+batch_test_results.json
+stresstest_results.json

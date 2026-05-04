@@ -149,6 +149,8 @@ def _detect_checkboxes_contours(cv_img, ocr_data=None) -> dict:
             for q_key in ["q1", "q2", "q3", "q4"]:
                 if q_y_vals[q_key]:
                     anchors[q_key] = sum(q_y_vals[q_key]) / len(q_y_vals[q_key])
+                else:
+                    anchors[q_key] = -999999
 
             # Pass 2: Map YES/NO/treatment option labels to their questions
             for j, word in enumerate(ocr_data["text"]):

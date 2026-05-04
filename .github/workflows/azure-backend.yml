@@ -1,41 +1,61 @@
-name: Azure Backend CD
+name: Backend → Azure App Service (Docker)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
       - 'backend/**'
+      - '.github/workflows/azure-backend.yml'
   workflow_dispatch:
 
 env:
-  ACR_NAME: 'packingdeclarationaawregistry' # Replace with your ACR name
-  IMAGE_NAME: 'neural-core'
-  WEBAPP_NAME: 'neural-core-app' # Replace with your Web App name
+  ACR_NAME: aawai                       # Azure Container Registry name
+  IMAGE_NAME: pkd-backend               # Docker image name in ACR
+  WEBAPP_NAME: pkd-backend              # Azure App Service name (update if different)
+  RESOURCE_GROUP: AAWAI                  # Resource group (update if different)
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout Source
-      uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Login to ACR
-      run: |
-        az acr login --name ${{ env.ACR_NAME }}
+      - name: Login to ACR
+        run: az acr login --name ${{ env.ACR_NAME }}
 
-    - name: Build and Push Image
-      run: |
-        cd backend
-        docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
-        docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      - name: Build and Push Docker Image
+        run: |
+          cd backend
+          docker build \
+            -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest \
+            .
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
 
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: ${{ env.WEBAPP_NAME }}
-        images: '${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}'
+      - name: Deploy to Azure Web App (Container)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEBAPP_NAME }}
+          images: '${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}'
+
+      - name: Set App Service Environment Variables
+        run: |
+          az webapp config appsettings set \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.WEBAPP_NAME }} \
+            --settings \
+              WEBSITES_PORT=8000 \
+              TESSERACT_CMD=/usr/bin/tesseract \
+              DATABASE_URL=sqlite:////home/data/pkd.db \
+              AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+              AZURE_CONTAINER_NAME="${{ secrets.AZURE_CONTAINER_NAME }}" \
+              POWER_AUTOMATE_URL="${{ secrets.POWER_AUTOMATE_URL }}" \
+              ALLOWED_ORIGINS="${{ secrets.ALLOWED_ORIGINS }}"

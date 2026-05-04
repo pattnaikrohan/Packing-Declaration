@@ -60,6 +60,9 @@ def extract_company(text: str) -> str | None:
         # Must not be all-lowercase or pure punctuation/noise
         if not any(c.isupper() for c in line):
             continue
+        # Must not be an address line
+        if re.search(r'(DISTRICT|PROVINCE|CITY|STREET|ROAD|CHINA|AUSTRALIA|NEW ZEALAND|P\.O\.|BOX|ZONE|AREA)', line, re.I):
+            continue
         # Must not be just punctuation or a trailing comma/period artefact
         clean = re.sub(r'[^A-Za-z0-9]', '', line)
         if len(clean) < 3:
@@ -106,10 +109,12 @@ def extract_address(text: str) -> tuple[str | None, bool]:
     # Expanded form body boundaries to handle OCR noise
     boundary_patterns = [
         r"UNACCEPTABLE\s+PAC?K(?:AGING|ING)",
-        r"PACKING\s+DECLARATION\s*\n",
+        r"(?:FCL|LCL|FCX)?\s*PACKING\s+DECLARATION\s*\n",
         r"Q1[\s_]+Have",
         r"TIMBER/BAMBOO",
         r"A[1234][\s_]+",
+        r"ISPM\s*15",
+        r"Cleanliness\s+Declaration"
     ]
     boundary_match = None
     for bp in boundary_patterns:
@@ -128,7 +133,8 @@ def extract_address(text: str) -> tuple[str | None, bool]:
         r'\bRD\b|\bST\b|\bAVE\b|SUITE|FLOOR|LEVEL|BUILDING|BLDG|ZONE|'
         r'SUBURB|PLOT|KAWASAN|JALAN|KEJI|YUHANG|LONGGANG|BANTIAN|LO-WU|'
         r'SHEFFIELD|NAPIER|WILDWOOD|MALACKY|SHENZHEN|GUANGDONG|POST\b|ZIP|PIN\b|'
-        r'IRRUNGATTUKOTTAI|SRIPERUMBUDUR|TAMIL NADU'
+        r'IRRUNGATTUKOTTAI|SRIPERUMBUDUR|TAMIL NADU|SWITZERLAND|GERMANY|FRANCE|ITALY|SPAIN|EUROPE|UK|UNITED KINGDOM|'
+        r'STREET|ROAD|AVENUE|BOULEVARD|P\.O\.\s*BOX|PO\s*BOX|P\.O\.'
     )
     
     for i, line in enumerate(header_lines[:15] + footer_lines):
@@ -156,8 +162,13 @@ def extract_address(text: str) -> tuple[str | None, bool]:
                             break
                 
                 # Strip common trailing boilerplate from address
-                addr_res = re.split(r'(?:CIN\s*NO|Phone|Tel|Website|Email|DECEMBER)', addr_res, flags=re.I)[0].strip()
+                addr_res = re.split(r'(?:CIN\s*NO|Phone|Tel|Website|Email|DECEMBER|Vessel|Voyage|Consignment|Declaration|Unacceptable)', addr_res, flags=re.I)[0].strip()
+                # Also strip raw consignment refs if they accidentally got attached (e.g. XMN26SE01057)
+                addr_res = re.sub(r',\s*[A-Z]{2,5}\d{2}[A-Z]{2}\d{4,8}.*', '', addr_res).strip()
                 addr_res = addr_res.rstrip(",. ")
+                # Check for bad extraction (e.g. random question text)
+                if len(addr_res) > 100 or re.search(r'(applicable to|timber packaging|treatment|ispm)', addr_res, re.I):
+                    continue
             except:
                 pass
             return addr_res, False
@@ -292,10 +303,13 @@ def extract_party(text: str, label: str) -> str | None:
 def extract_date(text: str) -> tuple[str | None, bool]:
     patterns = [
         # Explicit label patterns — handle underscore/noise and permissive connectors
-        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date)[:\s_]+(\d{1,2}[\/\-\.\s]{1,3}\d{1,2}[\/\-\.\s]{1,3}\d{1,4})", "%d/%m/%Y"),
-        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date)[:\s_]+(\d{4}[\/\-\.\s]{1,3}\d{1,2}[\/\-\.\s]{1,3}\d{1,2})", "%Y/%m/%d"),
+        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date|Date)[:\s_]+(\d{1,2}[\/\-\.\s]{1,3}\d{1,2}[\/\-\.\s]{1,3}\d{1,4})", "%d/%m/%Y"),
+        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date|Date)[:\s_]+(\d{4}[\/\-\.\s]{1,3}\d{1,2}[\/\-\.\s]{1,3}\d{1,2})", "%Y/%m/%d"),
+        # Textual Dates (e.g. 11 Dec 2025 or December 11, 2025)
+        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date|Date)[:\s_]*(\d{1,2}[\s\.\-]*[A-Za-z]{3,10}[\s\.\-]*\d{2,4})", "TEXT_DATE"),
+        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date|Date)[:\s_]*([A-Za-z]{3,10}[\s\.\-]*\d{1,2}[\s\.,\-]*\d{2,4})", "TEXT_DATE_US"),
         # Dates merged by OCR like "13202-2026" standing for 13/02-2026
-        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date)[:\s_]+(\d{2})2?0?(\d{2})[\-\/](\d{4})", "%d/%m/%Y"),
+        (r"(?:Date[d\s]*(?:of|on|at|for)?\s*issue[d]?|Issue\s+date|Date)[:\s_]+(\d{2})2?0?(\d{2})[\-\/](\d{4})", "%d/%m/%Y"),
         # Dates with spaces around separators (OCR artefact: "4/ 4/ 2b", where 2b is 2026)
         (r"\b(\d{1,2}[\s\/\-\.]{1,3}\d{1,2}[\s\/\-\.]{1,3}[A-Z\d]{1,4})\b", "%d/%m/%Y"),
         # Bare dates

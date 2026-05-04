@@ -1,0 +1,42 @@
+# Docker Compose for local development & testing
+# Usage: docker compose up --build
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pkd-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - pkd-data:/home/data           # Persistent SQLite DB
+    env_file:
+      - ./backend/.env
+    environment:
+      - TESSERACT_CMD=/usr/bin/tesseract
+      - DATABASE_URL=sqlite:////home/data/pkd.db
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pkd-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pkd-data:

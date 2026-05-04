@@ -12,7 +12,8 @@ Biosecurity packing declaration validation system for the Australian Department 
 cd backend
 
 # Copy env file
-copy .env.example .env
+copy .env.example .env    # Windows
+cp .env.example .env      # Linux/Mac
 
 # Create virtual environment and install dependencies
 python -m venv venv
@@ -25,7 +26,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Backend will be available at http://localhost:8000  
+Backend: http://localhost:8000  
 API docs: http://localhost:8000/docs
 
 ### 2. Frontend
@@ -36,54 +37,121 @@ npm install
 npm run dev
 ```
 
-Frontend will be available at http://localhost:5173
+Frontend: http://localhost:5173
+
+---
+
+## Docker (Local)
+
+```bash
+# Build and run both services
+docker compose up --build
+
+# Backend:  http://localhost:8000
+# Frontend: http://localhost:3000
+```
 
 ---
 
 ## Database
 
-**SQLite** — zero configuration. The database file is created automatically at `backend/data/pkd.db` on first startup.
-
-No PostgreSQL, no Docker required.
+**SQLite** — zero configuration. The database file is auto-created at `backend/data/pkd.db` on first startup.  
+In Docker/Azure, it persists at `/home/data/pkd.db`.
 
 ---
 
-## OCR (Optional)
+## OCR
 
 OCR extraction for scanned PDFs and images requires:
 
 **Tesseract**
-- Windows: https://github.com/UB-Mannheim/tesseract/wiki
+- Windows: https://github.com/UB-Mannheim/tesseract/wiki  
   - Install and add to PATH, or set `TESSERACT_CMD` in `.env`
-- Linux/Azure: auto-installed via startup.sh
+- Docker/Azure: **Automatically installed** in the Docker image
 
 **Poppler** (for PDF → image conversion)
-- Windows: https://github.com/oschwartz10612/poppler-windows/releases
+- Windows: https://github.com/oschwartz10612/poppler-windows/releases  
   - Extract and add the `bin/` folder to PATH
-- Linux/Azure: auto-installed via startup.sh
+- Docker/Azure: **Automatically installed** in the Docker image
 
 > **Note:** OCR gracefully degrades if not installed. Digital PDF, DOCX, and XLSX files work without OCR.
 
 ---
 
-## Power Automate
+## Azure Deployment
 
-Leave `POWER_AUTOMATE_PROCEED_URL` and `POWER_AUTOMATE_REJECT_URL` blank in `.env` to run in **mock mode** — the submission endpoint logs payloads instead of posting to PA.
+### Architecture
+
+```
+GitHub (main branch)
+   ├── backend/**  → GitHub Actions → Docker Build → AAWAI ACR → Azure App Service (Container)
+   └── frontend/** → GitHub Actions → npm build    → Azure Static Web Apps
+```
+
+### Prerequisites
+
+1. **Azure Container Registry** (`AAWAI.azurecr.io`)
+2. **Azure App Service** (Linux, Container) for backend
+3. **Azure Static Web App** for frontend
+4. **Azure Blob Storage** (`aawaidata` / container: `packing-declaration`)
+
+### Backend → Azure App Service (Docker Container)
+
+The backend Dockerfile bakes in **Tesseract OCR** and **Poppler**, so everything works out of the box.
+
+1. Create a Linux App Service (Container mode)
+2. Set the container source to `AAWAI.azurecr.io/pkd-backend:latest`
+3. Configure these **App Settings** in the Azure Portal:
+
+| Setting | Value |
+|---------|-------|
+| `WEBSITES_PORT` | `8000` |
+| `DATABASE_URL` | `sqlite:////home/data/pkd.db` |
+| `TESSERACT_CMD` | `/usr/bin/tesseract` |
+| `AZURE_STORAGE_CONNECTION_STRING` | Your connection string |
+| `AZURE_CONTAINER_NAME` | `packing-declaration` |
+| `ALLOWED_ORIGINS` | Your Static Web App URL |
+| `POWER_AUTOMATE_URL` | Your PA webhook URL |
+
+4. Enable **persistent storage** (mount `/home/data` in App Service → Path Mappings)
+
+### Frontend → Azure Static Web Apps
+
+1. Create an Azure Static Web App linked to this repo
+2. In GitHub Secrets, set:
+   - `AZURE_STATIC_WEB_APPS_API_TOKEN` — from the Static Web App resource
+   - `VITE_API_BASE_URL` — your backend App Service URL (e.g., `https://pkd-backend.azurewebsites.net`)
+3. The workflow auto-builds and deploys on push to `main`
+
+### GitHub Secrets Required
+
+| Secret | Description |
+|--------|-------------|
+| `AZURE_CREDENTIALS` | Service Principal JSON for `az login` |
+| `AZURE_STATIC_WEB_APPS_API_TOKEN` | From Azure Static Web App resource |
+| `AZURE_STORAGE_CONNECTION_STRING` | Azure Blob Storage connection string |
+| `AZURE_CONTAINER_NAME` | `packing-declaration` |
+| `VITE_API_BASE_URL` | Backend URL (e.g., `https://pkd-backend.azurewebsites.net`) |
+| `POWER_AUTOMATE_URL` | Power Automate webhook URL |
+| `ALLOWED_ORIGINS` | Frontend URL for CORS |
+
+### Setting Up Azure Credentials (Service Principal)
+
+```bash
+az ad sp create-for-rbac \
+  --name "pkd-github-actions" \
+  --role contributor \
+  --scopes /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/AAWAI \
+  --sdk-auth
+```
+
+Copy the JSON output and add it as `AZURE_CREDENTIALS` in GitHub → Settings → Secrets.
 
 ---
 
-## Azure Deployment
+## Power Automate
 
-### Backend → Azure App Service
-1. Create Python 3.11 App Service (Linux)
-2. Set startup command to `bash startup.sh` (in Configuration → General Settings)
-3. Set `DATABASE_URL` to a persistent path (e.g. `/home/data/pkd.db`)
-4. Deploy backend folder via GitHub Actions or `az webapp deploy`
-
-### Frontend → Azure Static Web Apps
-1. Create Azure Static Web App linked to your repo
-2. Set `VITE_API_BASE_URL` to your App Service URL (e.g. `https://pkd-backend.azurewebsites.net`)
-3. Build command: `npm run build`, output: `dist`
+Leave `POWER_AUTOMATE_URL` blank in `.env` to run in **mock mode** — the submission endpoint logs payloads instead of posting to PA.
 
 ---
 

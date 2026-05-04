@@ -23,7 +23,7 @@ class CheckboxResolver:
             return visual
         if text and text not in ("BLANK", "NOT_FOUND", "DECLARED_BLANK", None):
             return text
-        return visual if visual == "DECLARED_BLANK" else "NOT_FOUND"
+        return visual if visual == "DECLARED_BLANK" else "BLANK"
 
     @staticmethod
     def resolve_q2(visual: str, text: str, ml: Optional[str] = None) -> str:
@@ -32,7 +32,7 @@ class CheckboxResolver:
             return visual
         if text and text not in ("BLANK", "NOT_FOUND", "DECLARED_BLANK", None):
             return text
-        return visual if visual == "DECLARED_BLANK" else "NOT_FOUND"
+        return visual if visual == "DECLARED_BLANK" else "BLANK"
 
     @staticmethod
     def resolve_q3(visual: str, text: str, ml: Optional[str] = None) -> str:
@@ -41,7 +41,7 @@ class CheckboxResolver:
             return text
         if visual and visual not in ("BLANK", "NOT_FOUND", "DECLARED_BLANK"):
             return visual
-        return visual if visual == "DECLARED_BLANK" else "NOT_FOUND"
+        return visual if visual == "DECLARED_BLANK" else "BLANK"
 
     @staticmethod
     def resolve_q4(visual: str, text: str, ml: Optional[str] = None) -> str:
@@ -49,7 +49,7 @@ class CheckboxResolver:
             return visual
         if text and text not in ("BLANK", "NOT_FOUND", "DECLARED_BLANK", None):
             return text
-        return "ABSENT" if visual in ("DECLARED_BLANK", "ABSENT") else "NOT_FOUND"
+        return "ABSENT" if visual in ("DECLARED_BLANK", "ABSENT") else "BLANK"
 
     @staticmethod
     def map_resolution(q1_res: str, q2_res: str, q3_res: str, q4_res: str) -> Dict[str, str]:

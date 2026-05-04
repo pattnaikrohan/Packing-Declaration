@@ -69,7 +69,7 @@ def _real_pa_extraction(file_bytes: bytes, filename: str, fallback_result: Packi
 
     try:
         # Synchronous call within the extraction pipeline
-        with httpx.Client(timeout=60.0) as client:
+        with httpx.Client(timeout=180.0) as client:
             resp = client.post(
                 settings.POWER_AUTOMATE_URL,
                 json=payload,
