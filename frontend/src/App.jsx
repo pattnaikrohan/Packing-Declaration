@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react"
+// ── MSAL disabled temporarily ──
+// import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react"
 import UploadPage from './pages/UploadPage'
 import SendPage from './pages/SendPage'
 import TrainingPage from './pages/TrainingPage'
-import LoginPage from './pages/LoginPage'
+// import LoginPage from './pages/LoginPage'
 import './index.css'
 import './App.css'
 
@@ -25,7 +26,7 @@ export default function App() {
 
   return (
     <>
-      <AuthenticatedTemplate>
+      {/* AuthenticatedTemplate removed — re-enable when redirect URI is configured */}
         <div className={`app-container ${isTerminalMode ? 'terminal-mode' : ''}`}>
           <Toaster position="bottom-right" />
           
@@ -43,11 +44,7 @@ export default function App() {
             </footer>
           )}
         </div>
-      </AuthenticatedTemplate>
-
-      <UnauthenticatedTemplate>
-        <LoginPage />
-      </UnauthenticatedTemplate>
     </>
   )
 }
+
