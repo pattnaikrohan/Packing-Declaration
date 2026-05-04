@@ -106,7 +106,7 @@ def extract(file_bytes: bytes, filename: str, content_type: str = "") -> TripleE
 
     route = MIME_MAP.get(content_type) or EXT_MAP.get(ext, "pdf")
 
-    # 1. Primary Extraction (OCR or DOCX)
+    # 1. Primary Extraction (OCR or DOCX or pdfplumber)
     if route == "docx":
         from app.ingestion import docx_extractor
         ocr_result = docx_extractor.extract(file_bytes)
@@ -116,10 +116,15 @@ def extract(file_bytes: bytes, filename: str, content_type: str = "") -> TripleE
     elif route == "ocr_image":
         from app.ingestion import ocr_extractor
         ocr_result = ocr_extractor.extract(file_bytes, is_pdf=False)
+    elif route == "pdf":
+        # Digital PDF — use pdfplumber (instant, no ML model needed)
+        from app.ingestion import pdf_extractor
+        ocr_result = pdf_extractor.extract(file_bytes)
+        logger.info(f"[dispatch] Digital PDF — using pdfplumber (fast path)")
     else:
-        # For digital PDFs, we use the OCR extractor to get the "OCR" view
+        # Fallback
         from app.ingestion import ocr_extractor
-        ocr_result = ocr_extractor.extract(file_bytes, is_pdf=(route == "pdf"))
+        ocr_result = ocr_extractor.extract(file_bytes, is_pdf=False)
 
     ocr_result.file_name = filename
     ocr_result.extraction_method = ocr_result.extraction_method or ("ocr" if route != "docx" else "docx")
