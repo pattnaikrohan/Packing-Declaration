@@ -26,8 +26,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Backend: http://localhost:8000  
-API docs: http://localhost:8000/docs
+Backend: https://pkd-declaration.azurewebsites.net  
+API docs: https://pkd-declaration.azurewebsites.net/docs
 
 ### 2. Frontend
 
@@ -47,8 +47,8 @@ Frontend: http://localhost:5173
 # Build and run both services
 docker compose up --build
 
-# Backend:  http://localhost:8000
-# Frontend: http://localhost:3000
+# Backend:  https://pkd-declaration.azurewebsites.net
+# Frontend: https://delightful-ocean-0ea4d0b00.7.azurestaticapps.net
 ```
 
 ---

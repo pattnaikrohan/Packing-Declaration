@@ -18,9 +18,9 @@ services:
     environment:
       - TESSERACT_CMD=/usr/bin/tesseract
       - DATABASE_URL=sqlite:////home/data/pkd.db
-      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,https://delightful-ocean-0ea4d0b00.7.azurestaticapps.net,https://pkd-declaration.azurewebsites.net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "https://pkd-declaration.azurewebsites.net/health"]
       interval: 30s
       timeout: 10s
       retries: 3

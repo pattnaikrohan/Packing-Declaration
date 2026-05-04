@@ -7,31 +7,31 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/upload': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://pkd-declaration.azurewebsites.net',
         changeOrigin: true,
       },
       '/validate': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://pkd-declaration.azurewebsites.net',
         changeOrigin: true,
       },
       '/submit': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://pkd-declaration.azurewebsites.net',
         changeOrigin: true,
       },
       '/corpus': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://pkd-declaration.azurewebsites.net',
         changeOrigin: true,
       },
       '/models': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://pkd-declaration.azurewebsites.net',
         changeOrigin: true,
       },
       '/training': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://pkd-declaration.azurewebsites.net',
         changeOrigin: true,
       },
       '/health': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://pkd-declaration.azurewebsites.net',
         changeOrigin: true,
       },
     }
