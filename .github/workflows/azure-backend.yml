@@ -37,8 +37,10 @@ jobs:
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
 
-      - name: Trigger App Service to Pull New Image
+      - name: Summary
         run: |
-          curl -X POST "${{ secrets.WEBAPP_CD_WEBHOOK_URL }}" \
-            -H "Content-Length: 0" \
-            --fail --silent --show-error
+          echo "### ✅ Docker image pushed to ACR" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Image: \`${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Azure App Service has **Continuous Deployment** enabled and will auto-pull the \`:latest\` tag." >> $GITHUB_STEP_SUMMARY
