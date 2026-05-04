@@ -1,0 +1,167 @@
+[
+  {
+    "file": "CAN0978243 - AMPLYT0002 Packing Dec - signed.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "LCL Packing Declaration_2025_Single[0].pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "New Packing Dec(1)[0][2].docx",
+    "method": "docx",
+    "confidence": 1.0,
+    "completeness": 76.9,
+    "filled": 10,
+    "total": 13,
+    "q1": "BLANK",
+    "q2": "YES_TIMBER",
+    "q3": "BLANK",
+    "q4": "ABSENT"
+  },
+  {
+    "file": "Packing Dec.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "Packing Dec[1].pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "Packing Declaration ROH2026.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "Packing Declaration.jpg",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "Packing Declaration[2].jpg",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "Packing Declaration-BNE.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "PKD-ADL.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "PKD-FRE.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "PKD-MEL.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "FCL Packing Declaration_2025_Annual.docx",
+    "method": "docx",
+    "confidence": 1.0,
+    "completeness": 30.8,
+    "filled": 4,
+    "total": 13,
+    "q1": "BLANK",
+    "q2": "BLANK",
+    "q3": "BLANK",
+    "q4": "ABSENT"
+  },
+  {
+    "file": "FCL_FCX Packing Declration_2025_Single.docx",
+    "method": "docx",
+    "confidence": 1.0,
+    "completeness": 38.5,
+    "filled": 5,
+    "total": 13,
+    "q1": "BLANK",
+    "q2": "BLANK",
+    "q3": "BLANK",
+    "q4": "ABSENT"
+  },
+  {
+    "file": "LCL Packing Declaration_2025_Annual.docx",
+    "method": "docx",
+    "confidence": 1.0,
+    "completeness": 30.8,
+    "filled": 4,
+    "total": 13,
+    "q1": "BLANK",
+    "q2": "BLANK",
+    "q3": "BLANK",
+    "q4": "ABSENT"
+  },
+  {
+    "file": "LCL Packing Declaration_2025_Single.docx",
+    "method": "docx",
+    "confidence": 1.0,
+    "completeness": 38.5,
+    "filled": 5,
+    "total": 13,
+    "q1": "BLANK",
+    "q2": "BLANK",
+    "q3": "BLANK",
+    "q4": "ABSENT"
+  },
+  {
+    "file": "minimum-documentary-and-import-declaration-requirements-policy-v4.2.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "Packing declaration example - acceptable.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "Packing-declaration-example-unacceptable.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  },
+  {
+    "file": "packing-declaration-fact-sheet-english.pdf",
+    "method": "ERROR",
+    "confidence": 0,
+    "completeness": 0,
+    "error": "'text'"
+  }
+]

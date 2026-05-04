@@ -21,3 +21,4 @@ thefuzz>=0.22.1
 python-Levenshtein>=0.25.1
 scipy>=1.12.0
 azure-storage-blob>=12.19.0
+azure-ai-documentintelligence>=1.0.0
