@@ -5,7 +5,6 @@ Also detects when a PDF has no extractable text and auto-routes to OCR.
 import logging
 from app.ingestion.schema import PackingDeclaration
 from app.ingestion import ml_engine
-from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -111,12 +110,6 @@ def extract(file_bytes: bytes, filename: str, content_type: str = "") -> TripleE
     if route == "docx":
         from app.ingestion import docx_extractor
         ocr_result = docx_extractor.extract(file_bytes)
-    elif settings.use_azure_doc_intel and route in ("pdf", "ocr_image"):
-        # Azure Document Intelligence — best accuracy for structured forms
-        from app.ingestion import azure_doc_intel
-        is_pdf = (route == "pdf") or (route == "pdf" and not _is_pdf_scanned(file_bytes))
-        ocr_result = azure_doc_intel.extract(file_bytes, is_pdf=(route == "pdf"))
-        logger.info(f"[dispatch] Using Azure Document Intelligence for {filename}")
     elif route == "pdf" and _is_pdf_scanned(file_bytes):
         from app.ingestion import ocr_extractor
         ocr_result = ocr_extractor.extract(file_bytes, is_pdf=True)

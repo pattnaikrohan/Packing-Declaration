@@ -155,7 +155,7 @@ def _ocr_image(cv_img) -> tuple[str, float, dict]:
         return full_text, mean_conf, data
     except Exception as e:
         logger.warning(f"EasyOCR failed: {e}")
-        return "", 0.0, {}
+        return "", 0.0, {"text": [], "conf": [], "left": [], "top": [], "width": [], "height": [], "line_num": []}
 
 
 def _detect_checkboxes_contours(cv_img, ocr_data=None) -> dict:
@@ -377,12 +377,14 @@ def _detect_checkboxes_contours(cv_img, ocr_data=None) -> dict:
     # Standardize result: If it's still specifically NOT_FOUND after checking for ticked boxes,
     # it means we at least looked but found nothing ticked. If the boxes themselves exist 
     # but aren't ticked, we should label as DECLARED_BLANK.
-    # To do this robustly, we'd check against our candidates' locations.
-    for q in ["q1", "q2", "q3", "q4"]:
-        if result[q] == "NOT_FOUND":
-            # If we found at least one box for this question but none were ticked
-            if anchors.get(q) and any(min(anchors.keys(), key=lambda k: abs(anchors[k] - cand["y"])) == q for cand in candidates):
-                result[q] = "DECLARED_BLANK"
+    try:
+        for q in ["q1", "q2", "q3", "q4"]:
+            if result[q] == "NOT_FOUND":
+                # If we found at least one box for this question but none were ticked
+                if anchors.get(q) and any(min(anchors.keys(), key=lambda k: abs(anchors[k] - cand["y"])) == q for cand in candidates):
+                    result[q] = "DECLARED_BLANK"
+    except NameError:
+        pass  # anchors/candidates not defined if contour detection failed early
                 
     return result
 
@@ -616,6 +618,8 @@ def extract(file_bytes: bytes, is_pdf: bool = False) -> PackingDeclaration:
         _, _, data = _ocr_image(gray_img)
         w_img, h_img = pil_img.size
         
+        if "text" not in data or not data["text"]:
+            continue
         for j in range(len(data["text"])):
             txt = data["text"][j].strip()
             if not txt: continue

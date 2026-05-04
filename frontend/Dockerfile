@@ -9,7 +9,7 @@ RUN npm ci
 COPY . .
 
 # Build-time variable: the backend API URL
-ARG VITE_API_BASE_URL=http://localhost:8000
+ARG VITE_API_BASE_URL=pkd-declaration.azurewebsites.net
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build

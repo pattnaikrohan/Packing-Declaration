@@ -11,14 +11,6 @@ class Settings(BaseSettings):
     AZURE_CONTAINER_NAME: str = "dev-aaw"
     AZURE_FOLDER_NAME: str = "test"
 
-    # ── Azure Document Intelligence (best OCR for structured forms) ──
-    AZURE_DOC_INTEL_ENDPOINT: str = ""
-    AZURE_DOC_INTEL_KEY: str = ""
-
-    @property
-    def use_azure_doc_intel(self) -> bool:
-        return bool(self.AZURE_DOC_INTEL_ENDPOINT and self.AZURE_DOC_INTEL_KEY)
-
     @property
     def allowed_origins_list(self) -> List[str]:
         return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
