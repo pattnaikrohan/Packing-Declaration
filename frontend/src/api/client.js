@@ -2,7 +2,6 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://pkd-declaration.azurewebsites.net' : ''),
-  timeout: 180000,
 })
 
 export default api
