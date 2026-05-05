@@ -118,12 +118,30 @@ def extract(file_bytes: bytes) -> PackingDeclaration:
     with pdfplumber.open(BytesIO(file_bytes)) as pdf:
         full_text = "\n".join(p.extract_text() or "" for p in pdf.pages)
 
-        # Fallback: if pdfplumber gets no text, try PyMuPDF
+        # Fallback 1: if pdfplumber gets no text, try PyMuPDF text extraction
         if len(full_text.strip()) < 20:
             try:
                 import fitz
                 doc = fitz.open(stream=file_bytes, filetype="pdf")
                 fitz_text = "\n".join(page.get_text() for page in doc)
+                
+                # Fallback 2: if still no text, use PyMuPDF OCR (Tesseract)
+                if len(fitz_text.strip()) < 20:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.info("[pdf_extractor] Scanned PDF detected — running PyMuPDF OCR with Tesseract")
+                    ocr_pages = []
+                    for page in doc:
+                        try:
+                            tp = page.get_textpage_ocr(language="eng", dpi=300, full=True)
+                            ocr_pages.append(page.get_text("text", textpage=tp))
+                        except Exception as ocr_err:
+                            logger.warning(f"[pdf_extractor] Page OCR failed: {ocr_err}")
+                            ocr_pages.append("")
+                    ocr_text = "\n".join(ocr_pages)
+                    if len(ocr_text.strip()) > len(fitz_text.strip()):
+                        fitz_text = ocr_text
+                
                 doc.close()
                 if len(fitz_text.strip()) > len(full_text.strip()):
                     full_text = fitz_text
