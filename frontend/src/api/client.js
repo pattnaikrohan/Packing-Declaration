@@ -118,3 +118,21 @@ export async function listTrainingJobs() {
   const { data } = await api.get('/upload/jobs')
   return data
 }
+
+/**
+ * Trigger Power Automate flow to email audit report violations.
+ */
+export async function emailAuditReport(email, fileName, errors) {
+  const url = "https://default9a3bb30112fd4106a7f7563f72cfdf.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/052d8326f1c44497b4d468ea183a42ed/triggers/manual/paths/invoke?api-version=1";
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email,
+      fileName: fileName,
+      errors: errors.join('\n')
+    })
+  });
+  if (!response.ok) throw new Error('Email trigger failed');
+  return await response.json();
+}

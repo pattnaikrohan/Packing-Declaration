@@ -2,18 +2,17 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-// ── MSAL disabled temporarily (re-enable when redirect URI is configured) ──
-// import { PublicClientApplication } from "@azure/msal-browser"
-// import { MsalProvider } from "@azure/msal-react"
-// import { msalConfig } from "./authConfig"
+import { PublicClientApplication } from "@azure/msal-browser"
+import { MsalProvider } from "@azure/msal-react"
+import { msalConfig } from "./authConfig"
 import App from './App'
 import './index.css'
 
-// const msalInstance = new PublicClientApplication(msalConfig);
+const msalInstance = new PublicClientApplication(msalConfig);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* <MsalProvider instance={msalInstance}> */}
+    <MsalProvider instance={msalInstance}>
       <BrowserRouter>
         <App />
         <Toaster
@@ -31,6 +30,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           }}
         />
       </BrowserRouter>
-    {/* </MsalProvider> */}
+    </MsalProvider>
   </React.StrictMode>
 )

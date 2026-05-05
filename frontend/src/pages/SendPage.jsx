@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import mammoth from 'mammoth/mammoth.browser'
 import toast from 'react-hot-toast'
-import { submitToPA, uploadFile, clearStorage, validateDaffExternal } from '../api/client'
+import { submitToPA, uploadFile, clearStorage, validateDaffExternal, emailAuditReport } from '../api/client'
+import { useMsal } from "@azure/msal-react"
 
 // ─── nCr Comparison Engine ─────────────────────────────────────────────────────
 const KEY_FIELDS = [
@@ -324,7 +325,7 @@ function ComplianceOverlay({ currentDocName, docIndex, totalDocs, activeRuleInde
 
 
 // ─── Compliance Audit Report Modal ───────────────────────────────────────────
-function AuditReportModal({ file, report, onClose, onOverride }) {
+function AuditReportModal({ file, report, userEmail, onClose, onOverride }) {
   if (!report) return null;
 
   const { internal, external } = report;
@@ -415,7 +416,21 @@ function AuditReportModal({ file, report, onClose, onOverride }) {
         </div>
 
         <div className="audit-footer" style={{ gap: '12px' }}>
-          <button className="audit-email-btn" onClick={() => toast.success("Audit report transmitted to logistics hub")}>
+          <button 
+            className="audit-email-btn" 
+            onClick={async () => {
+              try {
+                const combinedErrors = [
+                  ...(internal.errors || []),
+                  ...(external.errors || [])
+                ];
+                await emailAuditReport(userEmail, file?.name || "Unknown", combinedErrors);
+                toast.success("Audit report transmitted via Power Automate");
+              } catch (e) {
+                toast.error("Failed to transmit audit report");
+              }
+            }}
+          >
              📧 EMAIL AUDIT REPORT
           </button>
           <button 
@@ -1181,6 +1196,8 @@ function JsonModal({ title, data, onClose }) {
 export default function SendPage() {
   const { state } = useLocation()
   const navigate = useNavigate()
+  const { accounts } = useMsal()
+  const userEmail = accounts[0]?.username || "unknown"
 
   // Memoize queue to prevent infinite useEffect loops
   const queue = useMemo(() => (state?.queue || []).slice(0, 20), [state?.queue])
@@ -1413,6 +1430,7 @@ export default function SendPage() {
       <AuditReportModal 
         file={activeAuditReport.file} 
         report={activeAuditReport.complianceDetails} 
+        userEmail={userEmail}
         onClose={() => setActiveAuditReport(null)} 
         onOverride={() => {
            const updated = complianceResults.map(r => 
