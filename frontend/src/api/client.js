@@ -134,5 +134,6 @@ export async function emailAuditReport(email, fileName, errors) {
     })
   });
   if (!response.ok) throw new Error('Email trigger failed');
-  return await response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : { status: "accepted" };
 }
