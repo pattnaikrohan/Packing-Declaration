@@ -1372,8 +1372,35 @@ export default function SendPage() {
       <section style={{ filter: isOverlaying ? 'blur(20px)' : 'none', opacity: isOverlaying ? 0.3 : 1 }}>
          {complianceResults && complianceResults.filter(r => !r.compliancePassed).length > 0 && (
            <div className="compliance-group failed-group fade-in">
-              <div className="group-header">
-                <h4 className="matrix-title danger">⚠ ATTENTION REQUIRED ({complianceResults.filter(r => !r.compliancePassed).length})</h4>
+              <div className="group-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h4 className="matrix-title danger" style={{ margin: 0 }}>⚠ ATTENTION REQUIRED ({complianceResults.filter(r => !r.compliancePassed).length})</h4>
+                <button 
+                  className="process-batch-btn" 
+                  style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', border: 'none', padding: '8px 16px', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '8px', color: '#fff', fontWeight: 'bold' }}
+                  onClick={async () => {
+                    const failedDocs = complianceResults.filter(r => !r.compliancePassed);
+                    let hasError = false;
+                    toast.loading("Emailing violations...", { id: "emailing-toast" });
+                    for (const doc of failedDocs) {
+                      const combinedErrors = [
+                        ...(doc.complianceDetails.internal.errors || []),
+                        ...(doc.complianceDetails.external.errors || [])
+                      ];
+                      try {
+                        await emailAuditReport(userEmail, doc.file.name, combinedErrors);
+                      } catch (e) {
+                        hasError = true;
+                      }
+                    }
+                    if (hasError) {
+                      toast.error("Failed to email some violations", { id: "emailing-toast" });
+                    } else {
+                      toast.success("All violations emailed successfully!", { id: "emailing-toast" });
+                    }
+                  }}
+                >
+                  📧 EMAIL ALL VIOLATIONS
+                </button>
               </div>
               <div className="results-row">
                 {complianceResults.filter(r => !r.compliancePassed).map((res, i) => (
