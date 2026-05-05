@@ -118,6 +118,18 @@ def extract(file_bytes: bytes) -> PackingDeclaration:
     with pdfplumber.open(BytesIO(file_bytes)) as pdf:
         full_text = "\n".join(p.extract_text() or "" for p in pdf.pages)
 
+        # Fallback: if pdfplumber gets no text, try PyMuPDF
+        if len(full_text.strip()) < 20:
+            try:
+                import fitz
+                doc = fitz.open(stream=file_bytes, filetype="pdf")
+                fitz_text = "\n".join(page.get_text() for page in doc)
+                doc.close()
+                if len(fitz_text.strip()) > len(full_text.strip()):
+                    full_text = fitz_text
+            except Exception:
+                pass
+
         acro = _extract_acroform(pdf)
         unicode_cb = _detect_checkbox_from_text(full_text)
         cb = _map_checkboxes(unicode_cb["ticked"], unicode_cb["unticked"])
