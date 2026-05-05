@@ -24,13 +24,14 @@ ALLOWED_CONTENT_TYPES = {
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB
 
 @router.post("/clear-storage")
-async def clear_storage(background_tasks: BackgroundTasks):
+async def clear_storage():
     """
     Clears all existing files in the Azure Blob Storage folder before a new batch.
+    Runs synchronously so the caller knows it's done before uploading.
     """
     from app.azure_storage import clear_blob_storage
-    background_tasks.add_task(clear_blob_storage)
-    return {"status": "clearing"}
+    await clear_blob_storage()
+    return {"status": "cleared"}
 
 @router.post("", response_model=TripleExtraction)
 async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
@@ -43,9 +44,11 @@ async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File
         raise HTTPException(status_code=413, detail="File exceeds 20 MB limit")
 
     try:
-        # Upload to Azure Blob Storage FIRST (synchronous) so Power Automate
-        # can find the file when AI Builder processes it
+        # Clear existing blobs first, then upload fresh
+        from app.azure_storage import clear_blob_storage
+        await clear_blob_storage()
         await upload_to_blob_storage(file_bytes, file.filename)
+        logger.info(f"Blob storage cleared and {file.filename} uploaded")
 
         # returns TripleExtraction (OCR + ML + PA from Power Automate)
         result = dispatcher.extract(file_bytes, file.filename, file.content_type)
