@@ -7,7 +7,10 @@ Pure Python — no system binaries (Tesseract/Poppler) required.
 import io
 import logging
 import re
-import cv2
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 import numpy as np
 from PIL import Image
 
@@ -20,23 +23,31 @@ logger = logging.getLogger(__name__)
 
 # Lazy-loaded EasyOCR reader (singleton — model loads once)
 _easyocr_reader = None
+_easyocr_available = None
 
 def _get_ocr_reader():
-    global _easyocr_reader
+    global _easyocr_reader, _easyocr_available
+    if _easyocr_available is False:
+        return None
     if _easyocr_reader is None:
-        import os
-        import easyocr
-        # On Azure App Service, /home is persistent across restarts
-        # This prevents re-downloading the ~100MB model on every restart
-        model_dir = '/home/.EasyOCR' if os.path.isdir('/home') else None
-        if model_dir:
-            os.makedirs(model_dir, exist_ok=True)
-        _easyocr_reader = easyocr.Reader(
-            ['en'], gpu=False,
-            model_storage_directory=model_dir
-        )
-        logger.info(f"EasyOCR reader initialized (CPU mode, models at {model_dir or 'default'})")
+        try:
+            import os
+            import easyocr
+            model_dir = '/home/.EasyOCR' if os.path.isdir('/home') else None
+            if model_dir:
+                os.makedirs(model_dir, exist_ok=True)
+            _easyocr_reader = easyocr.Reader(
+                ['en'], gpu=False,
+                model_storage_directory=model_dir
+            )
+            _easyocr_available = True
+            logger.info(f"EasyOCR reader initialized (CPU mode, models at {model_dir or 'default'})")
+        except ImportError:
+            _easyocr_available = False
+            logger.warning("EasyOCR not installed — using PyMuPDF text extraction fallback")
+            return None
     return _easyocr_reader
+
 
 
 def _load_images_from_pdf(file_bytes: bytes) -> list:
@@ -102,6 +113,12 @@ def _ocr_image(cv_img) -> tuple[str, float, dict]:
     """Run EasyOCR on an image array. Returns (text, confidence, tesseract-compatible data dict)."""
     try:
         reader = _get_ocr_reader()
+        
+        # Fallback if EasyOCR is not available
+        if reader is None:
+            logger.warning("EasyOCR not available — returning empty OCR result")
+            return "", 0.0, {"text": [], "conf": [], "left": [], "top": [], "width": [], "height": [], "line_num": []}
+        
         # EasyOCR expects numpy array (grayscale or BGR)
         results = reader.readtext(cv_img, detail=1, paragraph=False)
 
