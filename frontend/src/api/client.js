@@ -123,7 +123,7 @@ export async function listTrainingJobs() {
  * Trigger Power Automate flow to email audit report violations.
  */
 export async function emailAuditReport(email, fileName, errors) {
-  const url = "https://default9a3bb30112fd4106a7f7563f72cfdf.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/052d8326f1c44497b4d468ea183a42ed/triggers/manual/paths/invoke?api-version=1";
+  const url = "https://default9a3bb30112fd4106a7f7563f72cfdf.69.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/052d8326f1c44497b4d468ea183a42ed/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uF1gzEG3uomVb5tJiJ6IVP6uPziNFOo7N2-kOytr6R4";
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
