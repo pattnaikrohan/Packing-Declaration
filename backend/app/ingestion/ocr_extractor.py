@@ -24,9 +24,18 @@ _easyocr_reader = None
 def _get_ocr_reader():
     global _easyocr_reader
     if _easyocr_reader is None:
+        import os
         import easyocr
-        _easyocr_reader = easyocr.Reader(['en'], gpu=False)
-        logger.info("EasyOCR reader initialized (CPU mode)")
+        # On Azure App Service, /home is persistent across restarts
+        # This prevents re-downloading the ~100MB model on every restart
+        model_dir = '/home/.EasyOCR' if os.path.isdir('/home') else None
+        if model_dir:
+            os.makedirs(model_dir, exist_ok=True)
+        _easyocr_reader = easyocr.Reader(
+            ['en'], gpu=False,
+            model_storage_directory=model_dir
+        )
+        logger.info(f"EasyOCR reader initialized (CPU mode, models at {model_dir or 'default'})")
     return _easyocr_reader
 
 

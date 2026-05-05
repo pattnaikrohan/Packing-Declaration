@@ -34,16 +34,18 @@ EXT_MAP = {
 
 
 def _is_pdf_scanned(file_bytes: bytes) -> bool:
-    """Returns True if pdfplumber extracts no usable text (likely scanned)."""
+    """Returns True only if pdfplumber extracts virtually no text (truly scanned/image-only)."""
     try:
         import pdfplumber
         from io import BytesIO
         with pdfplumber.open(BytesIO(file_bytes)) as pdf:
             text = "".join(p.extract_text() or "" for p in pdf.pages[:3])
-            return len(text.strip()) < 50
+            is_scanned = len(text.strip()) < 20
+            logger.info(f"[dispatch] PDF text check: {len(text.strip())} chars → {'SCANNED' if is_scanned else 'DIGITAL'}")
+            return is_scanned
     except Exception as e:
-        logger.warning(f"Error checking if PDF is scanned: {e} - defaulting to True")
-        return True
+        logger.warning(f"Error checking if PDF is scanned: {e} - defaulting to digital (pdfplumber)")
+        return False  # Default to digital/pdfplumber — safer and faster
 
 
 def _real_pa_extraction(file_bytes: bytes, filename: str, fallback_result: PackingDeclaration) -> PackingDeclaration:
